@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2D Platformer & Stage Editor</title>
-  <!-- 共通スタイル定義の読み込み -->
   <link rel="stylesheet" href="./css/common.css">
   <style>
-    /* ランディングページ専用スタイル */
     body {
       display: flex;
       align-items: center;
@@ -34,7 +32,6 @@
       gap: 28px;
     }
 
-    /* ロゴ周り */
     .logo-container {
       width: 100%;
       min-height: 90px;
@@ -53,7 +50,6 @@
       margin-bottom: 8px;
     }
 
-    /* 画像がない場合に自動表示される代替テキストロゴ */
     .logo-fallback {
       display: flex;
       flex-direction: column;
@@ -79,7 +75,6 @@
       display: none !important;
     }
 
-    /* ナビゲーションボタン群 */
     .menu-group {
       width: 100%;
       display: flex;
@@ -100,12 +95,14 @@
       border-radius: 8px;
       transition: all 0.2s ease;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid transparent;
+      cursor: pointer;
     }
 
     .menu-btn.primary {
       background-color: var(--accent);
       color: #ffffff;
-      border: 1px solid var(--accent);
+      border-color: var(--accent);
     }
 
     .menu-btn.primary:hover {
@@ -117,7 +114,7 @@
     .menu-btn.secondary {
       background-color: var(--bg-input);
       color: var(--text-main);
-      border: 1px solid var(--border-color);
+      border-color: var(--border-color);
     }
 
     .menu-btn.secondary:hover {
@@ -134,7 +131,6 @@
       margin-top: 2px;
     }
 
-    /* フッター情報 */
     .landing-footer {
       font-size: 12px;
       color: var(--text-muted);
@@ -147,32 +143,28 @@
 </head>
 <body>
   <div class="landing-card">
-    <!-- ゲームロゴエリア -->
     <div class="logo-container">
-      <!-- textures/logo.png が存在すれば表示され、存在しない/読み込み失敗時は自動で非表示になります -->
       <img
         src="./textures/logo.png"
-        alt="2D PLATFORMER LOGO"
+        alt="GAME LOGO"
         class="logo-image"
         id="game-logo"
         onerror="this.classList.add('hide'); document.getElementById('logo-fallback').classList.remove('hide');"
       >
-
-      <!-- 画像がない場合のフォールバック（デフォルト表示） -->
       <div id="logo-fallback" class="logo-fallback">
         <span class="logo-fallback-title">2D PLATFORMER</span>
-        <span class="logo-fallback-subtitle">RETRO ACTION & STAGE BUILDER</span>
+        <span class="logo-fallback-subtitle">ACTION & STAGE BUILDER</span>
       </div>
     </div>
 
-    <!-- スタート画面ボタンメニュー -->
     <nav class="menu-group">
-      <a href="./game.html" class="menu-btn primary">
+      <!-- 専用のゲームウィンドウとして開くボタン -->
+      <button id="btn-open-game" class="menu-btn primary">
         <div>
           <div>▶ プレイ画面へ</div>
-          <span class="btn-desc">作成したステージを遊ぶ・挑戦する</span>
+          <span class="btn-desc">専用ウィンドウでゲームを開始</span>
         </div>
-      </a>
+      </button>
 
       <a href="./editor.html" class="menu-btn secondary">
         <div>
@@ -182,11 +174,25 @@
       </a>
     </nav>
 
-    <!-- ガイド・フッター -->
     <footer class="landing-footer">
-      <div>ブラウザですぐに遊べる2Dアクションゲーム</div>
-      <div>GitHub Pages 対応 / インストール不要</div>
+      <div>ブラウザで遊べる2Dアクションゲーム</div>
+      <div>GitHub Pages 対応</div>
     </footer>
   </div>
+
+  <script>
+    // プレイ画面を専用の独立ウィンドウとして起動
+    document.getElementById("btn-open-game").addEventListener("click", () => {
+      const width = 1024;
+      const height = 620;
+      const left = Math.max(0, (window.screen.width - width) / 2);
+      const top = Math.max(0, (window.screen.height - height) / 2);
+      window.open(
+        "./game.html",
+        "PlatformerGameWindow",
+        `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+      );
+    });
+  </script>
 </body>
 </html>

@@ -10,15 +10,15 @@
   overflow: hidden;
 }
 
-/* ゲーム描画Canvas：アスペクト比16:9を維持し、画面内に最大拡大 */
+/* ゲーム描画Canvas */
 #game-canvas {
   background-color: #1a1c23;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   aspect-ratio: 16 / 9;
-  width: 94vw;
-  max-height: 88vh;
+  width: 96vw;
+  max-height: 92vh;
   object-fit: contain;
   display: block;
 }
@@ -34,7 +34,7 @@
   align-items: center;
   pointer-events: none;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   text-shadow: 2px 2px 0 #000;
   z-index: 20;
@@ -59,6 +59,10 @@
   color: #fff;
 }
 
+.hud-value.active-item {
+  color: #38bdf8;
+}
+
 /* ゲームオーバー / クリア表示オーバーレイ */
 .overlay-screen {
   position: absolute;
@@ -66,7 +70,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -80,7 +84,6 @@
 
 .overlay-screen.active {
   opacity: 1;
-  pointer-events: auto;
 }
 
 .overlay-title {
@@ -100,21 +103,13 @@
 }
 
 .overlay-subtitle {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-muted);
 }
 
-.overlay-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-/* 操作説明バー（画面下部） */
-#controls-hint {
-  position: absolute;
-  bottom: 8px;
-  font-size: 12px;
-  color: var(--text-muted);
-  pointer-events: none;
+.overlay-status {
+  font-size: 13px;
+  color: #94a3b8;
+  font-family: var(--font-mono);
+  margin-top: 8px;
 }

@@ -12,7 +12,6 @@ class EditorUI {
     this.btnClear = document.getElementById("btn-clear");
     this.btnIO = document.getElementById("btn-io");
     this.btnTestPlay = document.getElementById("btn-testplay");
-    this.btnExportTextures = document.getElementById("btn-export-textures");
 
     this.modalIO = document.getElementById("modal-io");
     this.btnModalClose = document.getElementById("btn-modal-close");
@@ -24,14 +23,6 @@ class EditorUI {
     this.initPalette();
     this.initEventListeners();
     this.updateDimensionInputs();
-
-    // テクスチャ画像が後から読み込み完了した際にパレットを自動更新
-    if (window.onTexturesReady) {
-      window.onTexturesReady(() => {
-        this.initPalette();
-        this.editorCanvas.render();
-      });
-    }
   }
 
   initPalette() {
@@ -89,15 +80,6 @@ class EditorUI {
   }
 
   initEventListeners() {
-    // テクスチャ画像一括ダウンロード
-    if (this.btnExportTextures) {
-      this.btnExportTextures.addEventListener("click", () => {
-        if (confirm("全テクスチャのベース画像（16x16 PNGファイル一式）をダウンロードしますか？\nダウンロードした画像は assets/textures/ フォルダに配置してください。")) {
-          downloadDefaultTextures();
-        }
-      });
-    }
-
     this.btnResize.addEventListener("click", () => {
       const w = parseInt(this.inputWidth.value, 10);
       const h = parseInt(this.inputHeight.value, 10);
@@ -164,10 +146,19 @@ class EditorUI {
       }
     });
 
+    // テストプレイを専用ウィンドウで安全に起動
     this.btnTestPlay.addEventListener("click", () => {
       const stageData = JSON.stringify(this.tileMap.toJSON());
       localStorage.setItem(STORAGE_KEY_STAGE, stageData);
-      window.location.href = "game.html";
+      const width = 1024;
+      const height = 620;
+      const left = Math.max(0, (window.screen.width - width) / 2);
+      const top = Math.max(0, (window.screen.height - height) / 2);
+      window.open(
+        "game.html",
+        "PlatformerGameWindow",
+        `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+      );
     });
   }
 
