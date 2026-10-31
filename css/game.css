@@ -1,0 +1,120 @@
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0b0c10;
+  overflow: hidden;
+}
+
+/* ゲーム描画Canvas：アスペクト比16:9を維持し、画面内に最大拡大 */
+#game-canvas {
+  background-color: #1a1c23;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.85);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  aspect-ratio: 16 / 9;
+  width: 94vw;
+  max-height: 88vh;
+  object-fit: contain;
+  display: block;
+}
+
+/* 画面上部HUD */
+#hud {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 2px 2px 0 #000;
+  z-index: 20;
+}
+
+.hud-group {
+  display: flex;
+  gap: 20px;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-label {
+  color: var(--text-muted);
+}
+
+.hud-value {
+  color: #fff;
+}
+
+/* ゲームオーバー / クリア表示オーバーレイ */
+.overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.overlay-screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.overlay-title {
+  font-size: 36px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.overlay-title.gameover {
+  color: var(--danger);
+  text-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+}
+
+.overlay-title.clear {
+  color: var(--success);
+  text-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+}
+
+.overlay-subtitle {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.overlay-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* 操作説明バー（画面下部） */
+#controls-hint {
+  position: absolute;
+  bottom: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}

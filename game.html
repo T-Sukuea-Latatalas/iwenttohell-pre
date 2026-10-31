@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Platformer Game</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- ヘッドアップディスプレイ (HUD) -->
+    <header id="hud">
+      <div class="hud-group">
+        <div class="hud-item">
+          <span class="hud-label">HP:</span>
+          <span id="hud-hp" class="hud-value">♥♥♥</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">ENERGY:</span>
+          <span id="hud-energy" class="hud-value">0</span>
+        </div>
+      </div>
+      <div class="hud-group">
+        <div class="hud-item">
+          <span class="hud-label">STAGE:</span>
+          <span id="hud-stage-name" class="hud-value">Sector 1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- メインCanvas (内部解像度: 384×216) -->
+    <canvas id="game-canvas" width="384" height="216"></canvas>
+
+    <!-- 操作ヘルプ表示 -->
+    <div id="controls-hint">
+      [A / D] または [← / →]: 左右移動 | [SPACE] または [W / ↑]: ジャンプ | [SHIFT]: ダッシュ | [R]: リトライ
+    </div>
+
+    <!-- ゲームオーバー画面 -->
+    <div id="overlay-gameover" class="overlay-screen">
+      <div class="overlay-title gameover">SYSTEM OFFLINE</div>
+      <div class="overlay-subtitle">ロボットは大破しました...</div>
+      <div class="overlay-buttons">
+        <button id="btn-restart-gameover" class="primary">再挑戦 (R)</button>
+        <button id="btn-to-editor-gameover">エディタへ戻る</button>
+      </div>
+    </div>
+
+    <!-- ステージクリア画面 -->
+    <div id="overlay-clear" class="overlay-screen">
+      <div class="overlay-title clear">MISSION COMPLETE!</div>
+      <div id="clear-score-text" class="overlay-subtitle">エネルギーコアをすべて回収しました！</div>
+      <div class="overlay-buttons">
+        <button id="btn-restart-clear" class="primary">もう一度プレイ</button>
+        <button id="btn-to-editor-clear">エディタへ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- スクリプト順次読み込み（file:// 直開き対応） -->
+  <script src="js/common/constants.js"></script>
+  <script src="js/common/sprites.js"></script>
+  <script src="js/common/tilemap.js"></script>
+  <script src="js/game/camera.js"></script>
+  <script src="js/game/physics.js"></script>
+  <script src="js/game/player.js"></script>
+  <script src="js/game/enemy.js"></script>
+  <script src="js/game/game-main.js"></script>
+</body>
+</html>
