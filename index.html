@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Platformer & Stage Editor</title>
+  <!-- 共通スタイル定義の読み込み -->
+  <link rel="stylesheet" href="./css/common.css">
+  <style>
+    /* ランディングページ専用スタイル */
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at center, #1e2230 0%, #0b0c10 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .landing-card {
+      width: 100%;
+      max-width: 520px;
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 28px;
+    }
+
+    /* ロゴ周り */
+    .logo-container {
+      width: 100%;
+      min-height: 90px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-image {
+      max-width: 80%;
+      max-height: 120px;
+      height: auto;
+      object-fit: contain;
+      image-rendering: pixelated;
+      margin-bottom: 8px;
+    }
+
+    /* 画像がない場合に自動表示される代替テキストロゴ */
+    .logo-fallback {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .logo-fallback-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #38bdf8;
+      text-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+      font-family: var(--font-mono);
+    }
+
+    .logo-fallback-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .hide {
+      display: none !important;
+    }
+
+    /* ナビゲーションボタン群 */
+    .menu-group {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-btn.primary {
+      background-color: var(--accent);
+      color: #ffffff;
+      border: 1px solid var(--accent);
+    }
+
+    .menu-btn.primary:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    }
+
+    .menu-btn.secondary {
+      background-color: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    .menu-btn.secondary:hover {
+      background-color: var(--border-color);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-desc {
+      display: block;
+      font-size: 11px;
+      font-weight: normal;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 2px;
+    }
+
+    /* フッター情報 */
+    .landing-footer {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      border-top: 1px solid var(--border-color);
+      padding-top: 16px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-card">
+    <!-- ゲームロゴエリア -->
+    <div class="logo-container">
+      <!-- textures/logo.png が存在すれば表示され、存在しない/読み込み失敗時は自動で非表示になります -->
+      <img
+        src="./textures/logo.png"
+        alt="2D PLATFORMER LOGO"
+        class="logo-image"
+        id="game-logo"
+        onerror="this.classList.add('hide'); document.getElementById('logo-fallback').classList.remove('hide');"
+      >
+
+      <!-- 画像がない場合のフォールバック（デフォルト表示） -->
+      <div id="logo-fallback" class="logo-fallback">
+        <span class="logo-fallback-title">2D PLATFORMER</span>
+        <span class="logo-fallback-subtitle">RETRO ACTION & STAGE BUILDER</span>
+      </div>
+    </div>
+
+    <!-- スタート画面ボタンメニュー -->
+    <nav class="menu-group">
+      <a href="./game.html" class="menu-btn primary">
+        <div>
+          <div>▶ プレイ画面へ</div>
+          <span class="btn-desc">作成したステージを遊ぶ・挑戦する</span>
+        </div>
+      </a>
+
+      <a href="./editor.html" class="menu-btn secondary">
+        <div>
+          <div>🛠 作成画面へ（エディタ）</div>
+          <span class="btn-desc">タイルを配置してオリジナルコースを作る</span>
+        </div>
+      </a>
+    </nav>
+
+    <!-- ガイド・フッター -->
+    <footer class="landing-footer">
+      <div>ブラウザですぐに遊べる2Dアクションゲーム</div>
+      <div>GitHub Pages 対応 / インストール不要</div>
+    </footer>
+  </div>
+</body>
+</html>
