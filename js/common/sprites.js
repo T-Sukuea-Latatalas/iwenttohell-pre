@@ -1,32 +1,10 @@
-// 読み込んだ画像およびフォールバックCanvasのキャッシュ
 const spriteCache = new Map();
-const fallbackCache = new Map();
-const imageCache = new Map();
 
-// 画像ロード完了コールバックリスト
-const textureLoadCallbacks = [];
+function initSprites() {
+  if (spriteCache.size > 0) return;
 
-/**
- * テクスチャ画像のロード監視リスナーを登録
- */
-function onTexturesReady(callback) {
-  textureLoadCallbacks.push(callback);
-}
-
-function notifyTexturesReady() {
-  for (const cb of textureLoadCallbacks) {
-    cb();
-  }
-}
-
-/**
- * 初期フォールバック用のプロシージャル画像を生成
- */
-function generateFallbackSprites() {
-  if (fallbackCache.size > 0) return;
-
-  // 1. 地面
-  createProceduralSprite(TILES.SOLID_GROUND, (ctx) => {
+  // 1. SOLID_GROUND (地面)
+  createTileSprite(TILES.SOLID_GROUND, (ctx) => {
     ctx.fillStyle = "#5c4033";
     ctx.fillRect(0, 0, 16, 16);
     ctx.fillStyle = "#4ade80";
@@ -40,8 +18,8 @@ function generateFallbackSprites() {
     ctx.fillRect(10, 11, 2, 2);
   });
 
-  // 2. レンガ
-  createProceduralSprite(TILES.SOLID_BRICK, (ctx) => {
+  // 2. SOLID_BRICK (レンガ)
+  createTileSprite(TILES.SOLID_BRICK, (ctx) => {
     ctx.fillStyle = "#9a3412";
     ctx.fillRect(0, 0, 16, 16);
     ctx.fillStyle = "#431407";
@@ -56,8 +34,8 @@ function generateFallbackSprites() {
     ctx.fillRect(8, 1, 6, 1);
   });
 
-  // 3. 足場
-  createProceduralSprite(TILES.PLATFORM, (ctx) => {
+  // 3. PLATFORM (足場)
+  createTileSprite(TILES.PLATFORM, (ctx) => {
     ctx.fillStyle = "#d97706";
     ctx.fillRect(0, 0, 16, 5);
     ctx.fillStyle = "#fef3c7";
@@ -68,8 +46,8 @@ function generateFallbackSprites() {
     ctx.fillRect(11, 5, 2, 4);
   });
 
-  // 4. トゲ
-  createProceduralSprite(TILES.HAZARD_SPIKE, (ctx) => {
+  // 4. HAZARD_SPIKE (トゲ)
+  createTileSprite(TILES.HAZARD_SPIKE, (ctx) => {
     ctx.fillStyle = "#94a3b8";
     for (const offset of [0, 8]) {
       ctx.beginPath();
@@ -84,8 +62,8 @@ function generateFallbackSprites() {
     ctx.fillRect(11, 2, 2, 3);
   });
 
-  // 5. アイテム
-  createProceduralSprite(TILES.ITEM_ENERGY, (ctx) => {
+  // 5. ITEM_ENERGY (収集アイテム)
+  createTileSprite(TILES.ITEM_ENERGY, (ctx) => {
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
     ctx.arc(8, 8, 5, 0, Math.PI * 2);
@@ -96,8 +74,8 @@ function generateFallbackSprites() {
     ctx.fill();
   });
 
-  // 6. ゴール
-  createProceduralSprite(TILES.GOAL, (ctx) => {
+  // 6. GOAL (パレット用 16x16 簡易表示)
+  createTileSprite(TILES.GOAL, (ctx) => {
     ctx.fillStyle = "#1e293b";
     ctx.fillRect(2, 0, 12, 16);
     ctx.fillStyle = "#10b981";
@@ -106,8 +84,8 @@ function generateFallbackSprites() {
     ctx.fillRect(6, 4, 4, 8);
   });
 
-  // 10. プレイヤー
-  createProceduralSprite(TILES.SPAWN_PLAYER, (ctx) => {
+  // 10. SPAWN_PLAYER (プレイヤー)
+  createTileSprite(TILES.SPAWN_PLAYER, (ctx) => {
     ctx.fillStyle = "#38bdf8";
     ctx.fillRect(3, 2, 10, 8);
     ctx.fillStyle = "#0284c7";
@@ -118,8 +96,8 @@ function generateFallbackSprites() {
     ctx.fillRect(7, 0, 2, 2);
   });
 
-  // 20. スライム
-  createProceduralSprite(TILES.SPAWN_SLIME, (ctx) => {
+  // 20. SPAWN_SLIME (スライム)
+  createTileSprite(TILES.SPAWN_SLIME, (ctx) => {
     ctx.fillStyle = "#a855f7";
     ctx.beginPath();
     ctx.arc(8, 9, 6, 0, Math.PI * 2);
@@ -133,8 +111,8 @@ function generateFallbackSprites() {
     ctx.fillRect(11, 9, 1, 2);
   });
 
-  // 21. ドローン
-  createProceduralSprite(TILES.SPAWN_FLYER, (ctx) => {
+  // 21. SPAWN_FLYER (ドローン)
+  createTileSprite(TILES.SPAWN_FLYER, (ctx) => {
     ctx.fillStyle = "#ec4899";
     ctx.fillRect(4, 5, 8, 6);
     ctx.fillStyle = "#64748b";
@@ -145,58 +123,18 @@ function generateFallbackSprites() {
   });
 }
 
-function createProceduralSprite(tileId, renderFn) {
+function createTileSprite(tileId, renderFn) {
   const canvas = document.createElement("canvas");
   canvas.width = TILE_SIZE;
   canvas.height = TILE_SIZE;
   const ctx = canvas.getContext("2d");
   renderFn(ctx);
-  fallbackCache.set(tileId, canvas);
   spriteCache.set(tileId, canvas);
 }
 
-/**
- * すべてのテクスチャ画像をロード
- */
-function initSprites() {
-  generateFallbackSprites();
-
-  const entries = Object.entries(TEXTURE_FILES);
-  let loadedCount = 0;
-
-  for (const [tileIdStr, filename] of entries) {
-    const tileId = Number(tileIdStr);
-    const img = new Image();
-    img.src = TEXTURE_DIR + filename;
-
-    img.onload = () => {
-      // ロード成功：画像オブジェクトを本番キャッシュに登録
-      spriteCache.set(tileId, img);
-      imageCache.set(tileId, img);
-      loadedCount++;
-      if (loadedCount === entries.length) {
-        notifyTexturesReady();
-      }
-    };
-
-    img.onerror = () => {
-      // 画像が存在しない場合はフォールバックを使用（エラー停止しない）
-      console.info(`[Info] 画像 '${TEXTURE_DIR + filename}' が未配置のためフォールバック描画を使用します。`);
-      spriteCache.set(tileId, fallbackCache.get(tileId));
-      loadedCount++;
-      if (loadedCount === entries.length) {
-        notifyTexturesReady();
-      }
-    };
-  }
-}
-
-/**
- * 指定の座標にスプライトを描画
- */
 function drawTile(ctx, tileId, dx, dy, dSize = TILE_SIZE) {
   if (tileId === TILES.EMPTY) return;
-  const sprite = spriteCache.get(tileId) || fallbackCache.get(tileId);
+  const sprite = spriteCache.get(tileId);
   if (sprite) {
     ctx.drawImage(sprite, dx, dy, dSize, dSize);
   } else {
@@ -206,35 +144,58 @@ function drawTile(ctx, tileId, dx, dy, dSize = TILE_SIZE) {
 }
 
 /**
- * パレット表示用スプライト（CanvasまたはImage）の取得
+ * 3x3マス (48x48px) のゴールゲートを描画
+ * @param {CanvasRenderingContext2D} ctx 
+ * @param {number} x ゲート左上X座標 (px)
+ * @param {number} y ゲート左上Y座標 (px)
  */
-function getSpriteCanvas(tileId) {
-  return spriteCache.get(tileId) || fallbackCache.get(tileId);
+function drawGoalGate3x3(ctx, x, y) {
+  const size = TILE_SIZE * 3; // 48px
+
+  ctx.save();
+
+  // ゲート外枠（アーチ柱）
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(x + 2, y + 4, 10, size - 4);            // 左柱
+  ctx.fillRect(x + size - 12, y + 4, 10, size - 4);     // 右柱
+  ctx.fillRect(x + 2, y + 2, size - 4, 12);            // 天井アーチ
+
+  // 内枠ハイライト
+  ctx.fillStyle = "#334155";
+  ctx.fillRect(x + 6, y + 6, size - 12, 6);
+  ctx.fillRect(x + 4, y + 12, 6, size - 12);
+  ctx.fillRect(x + size - 10, y + 12, 6, size - 12);
+
+  // ポータル内部空間（中央の縦2マス分）
+  ctx.fillStyle = "#064e3b";
+  ctx.fillRect(x + 14, y + 16, 20, 32);
+
+  // エネルギーポータル（輝くエネルギーの渦）
+  ctx.fillStyle = "#10b981";
+  ctx.fillRect(x + 17, y + 20, 14, 28);
+  ctx.fillStyle = "#6ee7b7";
+  ctx.fillRect(x + 20, y + 24, 8, 24);
+  ctx.fillStyle = "#ecfdf5";
+  ctx.fillRect(x + 22, y + 28, 4, 20);
+
+  // 上部エナジーコアランプ（発光体）
+  ctx.fillStyle = "#34d399";
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + 8, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 足元ステップ
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(x, y + size - 3, size, 3);
+
+  ctx.restore();
 }
 
-/**
- * ★初期テクスチャ画像（16x16 PNG）を一括ダウンロードする便利機能
- */
-function downloadDefaultTextures() {
-  generateFallbackSprites();
-
-  Object.entries(TEXTURE_FILES).forEach(([tileIdStr, filename], index) => {
-    const tileId = Number(tileIdStr);
-    const canvas = fallbackCache.get(tileId);
-    if (!canvas) return;
-
-    // ブラウザの同時ダウンロード制限を避けるため少しずつ遅延実行
-    setTimeout(() => {
-      const a = document.createElement("a");
-      a.href = canvas.toDataURL("image/png");
-      a.download = filename;
-      a.click();
-    }, index * 180);
-  });
+function getSpriteCanvas(tileId) {
+  return spriteCache.get(tileId);
 }
 
 window.initSprites = initSprites;
 window.drawTile = drawTile;
+window.drawGoalGate3x3 = drawGoalGate3x3;
 window.getSpriteCanvas = getSpriteCanvas;
-window.onTexturesReady = onTexturesReady;
-window.downloadDefaultTextures = downloadDefaultTextures;

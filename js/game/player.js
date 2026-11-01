@@ -2,7 +2,7 @@ class Player {
   constructor(tileX, tileY) {
     this.normalWidth = 14;
     this.normalHeight = 15;
-    this.crouchHeight = 9; // しゃがみ時の高さ
+    this.crouchHeight = 9;
 
     this.width = this.normalWidth;
     this.height = this.normalHeight;
@@ -13,8 +13,13 @@ class Player {
     this.prevY = 0;
     this.prevVy = 0;
 
-    // アイテム所持状態 (null: 未所持, "core_blaster": 所持中)
+    // アイテム所持状態
     this.equippedItem = null;
+
+    // ジャンプ管理
+    this.jumpInputConsumed = false; // キーを離すまで次のジャンプを禁止するフラグ
+    this.isJumping = false;          // 上昇ジャンプ中フラグ
+    this.jumpHoldTimer = 0;          // 長押し継続フレーム
 
     this.reset();
   }
@@ -28,6 +33,7 @@ class Player {
     this.prevVy = 0;
     this.vx = 0;
     this.vy = 0;
+
     this.isGrounded = false;
     this.isCrouching = false;
     this.facingLeft = false;
@@ -35,11 +41,12 @@ class Player {
     this.isDead = false;
     this.invincibleTimer = 0;
     this.attackCooldown = 0;
+
+    this.jumpInputConsumed = false;
+    this.isJumping = false;
+    this.jumpHoldTimer = 0;
   }
 
-  /**
-   * アイテム取得
-   */
   obtainItem(itemId = "core_blaster") {
     this.equippedItem = itemId;
   }
@@ -57,7 +64,7 @@ class Player {
       this.attackCooldown--;
     }
 
-    // 1. しゃがみ判定 (Sキー)
+    // 1. しゃがみ入力 (Sキー)
     const crouchRequested = Boolean(keys["KeyS"]);
     if (crouchRequested && this.isGrounded) {
       if (!this.isCrouching) {
@@ -66,17 +73,16 @@ class Player {
         this.height = this.crouchHeight;
       }
     } else if (this.isCrouching) {
-      // 立ち上がり判定
       this.isCrouching = false;
       this.y -= (this.normalHeight - this.crouchHeight);
       this.height = this.normalHeight;
     }
 
-    // 2. 移動 & ダッシュ (Shiftキー)
+    // 2. 左右移動 & ダッシュ (Shiftキー)
     const isRunning = (keys["ShiftLeft"] || keys["ShiftRight"]) && !this.isCrouching;
     let maxSpeed = isRunning ? PHYSICS.MOVE_SPEED * 1.5 : PHYSICS.MOVE_SPEED;
     if (this.isCrouching) {
-      maxSpeed *= 0.4; // しゃがみ歩き
+      maxSpeed *= 0.4;
     }
 
     let moveInput = 0;
@@ -94,27 +100,51 @@ class Player {
       if (Math.abs(this.vx) < 0.05) this.vx = 0;
     }
 
-    // 3. ジャンプ判定 (W または Space)
-    const jumpRequested = Boolean(keys["KeyW"] || keys["Space"]);
-    if (jumpRequested && this.isGrounded && !this.isCrouching) {
-      this.vy = PHYSICS.JUMP_FORCE;
-      this.isGrounded = false;
+    // 3. ジャンプ入力・長押し可変ジャンプ・オートジャンプ防止
+    const jumpKeyDown = Boolean(keys["KeyW"] || keys["Space"]);
+
+    // キーを離した時点でジャンプ消費フラグをリセット
+    if (!jumpKeyDown) {
+      this.jumpInputConsumed = false;
+      // 上昇中にキーを離したら上昇速度をカット（小ジャンプ対応）
+      if (this.isJumping && this.vy < -1.8) {
+        this.vy = -1.8;
+      }
+      this.isJumping = false;
     }
 
-    // 4. 攻撃判定 (Eキー) - 「アイテム所持時のみ」発動
+    // ジャンプ発動条件: キー押下中 + まだ消費されていない + 地面に立っている + しゃがんでいない
+    if (jumpKeyDown && !this.jumpInputConsumed && this.isGrounded && !this.isCrouching) {
+      this.vy = PHYSICS.INITIAL_JUMP_FORCE;
+      this.isGrounded = false;
+      this.isJumping = true;
+      this.jumpHoldTimer = 0;
+      this.jumpInputConsumed = true; // このキー押下でのジャンプは消費（着地しても再ジャンプさせない）
+    }
+
+    // 長押しによる継続上昇力付与
+    if (this.isJumping && jumpKeyDown && this.vy < 0) {
+      if (this.jumpHoldTimer < PHYSICS.MAX_JUMP_HOLD_FRAMES) {
+        this.vy += PHYSICS.JUMP_HOLD_ACCEL;
+        this.jumpHoldTimer++;
+      } else {
+        this.isJumping = false;
+      }
+    }
+
+    // 4. 攻撃入力 (Eキー)
     const attackRequested = Boolean(keys["KeyE"]);
     if (attackRequested && this.equippedItem !== null && this.attackCooldown === 0) {
       if (onAttack) {
-        // 弾の生成
         const projectileX = this.facingLeft ? this.x - 6 : this.x + this.width + 1;
         const projectileY = this.y + (this.isCrouching ? 2 : 5);
         const direction = this.facingLeft ? -1 : 1;
         onAttack(projectileX, projectileY, direction, this.equippedItem);
       }
-      this.attackCooldown = 18; // 発射ディレイ
+      this.attackCooldown = 18;
     }
 
-    // 5. 重力加算
+    // 5. 緩やかな重力加算
     this.vy += PHYSICS.GRAVITY;
     if (this.vy > PHYSICS.MAX_FALL_SPEED) {
       this.vy = PHYSICS.MAX_FALL_SPEED;
@@ -130,32 +160,26 @@ class Player {
     }
   }
 
-  /**
-   * 被ダメージ処理
-   * HP制は廃止。アイテム未所持なら即死、所持中ならアイテム消失で耐える
-   */
   takeDamage() {
     if (this.invincibleTimer > 0 || this.isDead) return;
 
     if (this.equippedItem !== null) {
-      // アイテムを消費して通常状態に戻る
       this.equippedItem = null;
-      this.invincibleTimer = 90; // 約1.5秒の無敵時間
-      this.vy = -3.5;
+      this.invincibleTimer = 90;
+      this.vy = -2.8;
     } else {
-      // アイテムなしでの被弾は即座にゲームオーバー
       this.isDead = true;
     }
   }
 
   bounce() {
-    this.vy = PHYSICS.JUMP_FORCE * 0.85;
+    this.vy = PHYSICS.INITIAL_JUMP_FORCE * 0.82;
+    this.isJumping = false;
   }
 
   render(ctx, camera) {
     if (this.isDead) return;
 
-    // 無敵点滅
     if (this.invincibleTimer > 0 && Math.floor(this.invincibleTimer / 4) % 2 === 0) {
       return;
     }
@@ -165,7 +189,6 @@ class Player {
 
     ctx.save();
 
-    // 左右反転
     if (this.facingLeft) {
       ctx.translate(drawX + this.width, drawY);
       ctx.scale(-1, 1);
@@ -173,16 +196,13 @@ class Player {
       ctx.translate(drawX, drawY);
     }
 
-    // しゃがみ描画調整
     if (this.isCrouching) {
-      // しゃがみ時の簡易スプライト描画
       ctx.fillStyle = this.equippedItem ? "#38bdf8" : "#94a3b8";
       ctx.fillRect(1, 1, 12, 8);
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(8, 2, 4, 3);
     } else {
       drawTile(ctx, TILES.SPAWN_PLAYER, 0, 0, TILE_SIZE);
-      // アイテム所持時はアンテナ部分を強調表示
       if (this.equippedItem) {
         ctx.fillStyle = "#38bdf8";
         ctx.fillRect(6, -2, 4, 3);

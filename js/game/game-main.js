@@ -66,6 +66,7 @@ class Game {
     this.player = null;
     this.enemies = [];
     this.projectiles = [];
+    this.goalGate = null; // 3x3ゴールゲート位置情報 { x, y, entranceRect }
 
     this.energyCollected = 0;
     this.totalEnergyCount = 0;
@@ -85,22 +86,16 @@ class Game {
     requestAnimationFrame(this.loop.bind(this));
   }
 
-  /**
-   * エディタからのテストプレイ判定
-   * 通常プレイ画面ではボタンを隠し、エディタから開かれた場合のみ表示
-   */
   checkEditorTestMode() {
     const params = new URLSearchParams(window.location.search);
     const isEditorTest = params.get("mode") === "editor_test";
 
     if (isEditorTest) {
       this.editorReturnBar.style.display = "block";
-      // HUDの位置がボタンと被らないよう微調整
       const hud = document.getElementById("hud");
       if (hud) hud.style.top = "44px";
 
       this.btnReturnToEditor.addEventListener("click", () => {
-        // テストプレイ専用ウィンドウを閉じてエディタ側へ戻る
         if (window.opener && !window.opener.closed) {
           window.opener.focus();
         }
@@ -127,12 +122,15 @@ class Game {
 
     this.enemies = [];
     this.projectiles = [];
+    this.goalGate = null;
     this.energyCollected = 0;
     this.totalEnergyCount = 0;
 
+    // ステージ走査: エネミー、ゴールゲート(3x3)、アイテムの抽出
     for (let y = 0; y < this.tileMap.height; y++) {
       for (let x = 0; x < this.tileMap.width; x++) {
         const tile = this.tileMap.getTile(x, y);
+
         if (tile === TILES.SPAWN_SLIME) {
           this.enemies.push(new SlimeEnemy(x, y));
           this.tileMap.setTile(x, y, TILES.EMPTY);
@@ -143,6 +141,25 @@ class Game {
           this.tileMap.setTile(x, y, TILES.EMPTY);
         } else if (tile === TILES.ITEM_ENERGY) {
           this.totalEnergyCount++;
+        } else if (tile === TILES.GOAL && !this.goalGate) {
+          // 配置タイル (x, y) を「3x3ゲートの底辺中央」として登録
+          const gatePixelX = (x - 1) * TILE_SIZE;
+          const gatePixelY = (y - 2) * TILE_SIZE;
+
+          this.goalGate = {
+            tileX: x,
+            tileY: y,
+            pixelX: gatePixelX,
+            pixelY: gatePixelY,
+            // 進入判定領域: 縦中央（幅16px）× 下から2マス（高さ32px）
+            entranceRect: {
+              x: gatePixelX + TILE_SIZE,      // 中央列
+              y: gatePixelY + TILE_SIZE,      // 上から2マス目〜3マス目（下から2マス）
+              width: TILE_SIZE,              // 16px
+              height: TILE_SIZE * 2          // 32px
+            }
+          };
+          this.tileMap.setTile(x, y, TILES.EMPTY); // 地形タイルとしては消去し、専用描画・判定へ
         }
       }
     }
@@ -173,11 +190,12 @@ class Game {
 
     window.addEventListener("blur", () => {
       this.keys = {};
+      if (this.player) {
+        this.player.jumpInputConsumed = false;
+      }
     });
 
-    // マウスクリックでの再開を阻止
     window.addEventListener("click", (e) => {
-      // エディタに戻るボタン以外のクリックはゲーム進行に影響させない
       if (e.target !== this.btnReturnToEditor) {
         e.stopPropagation();
       }
@@ -193,6 +211,7 @@ class Game {
   update() {
     if (this.isCleared) return;
 
+    // 1. プレイヤー更新
     this.player.update(this.keys, this.tileMap, (px, py, dir, type) => {
       this.projectiles.push(new Projectile(px, py, dir, type));
     });
@@ -203,8 +222,10 @@ class Game {
       return;
     }
 
+    // 2. カメラ追従
     this.camera.follow(this.player);
 
+    // 3. 弾の更新 & エネミー衝突
     for (const proj of this.projectiles) {
       proj.update(this.tileMap);
       for (const enemy of this.enemies) {
@@ -217,6 +238,7 @@ class Game {
     }
     this.projectiles = this.projectiles.filter((p) => !p.removeMe);
 
+    // 4. マップトリガー（トゲ・アイテム）
     Physics.checkTriggers(this.player, this.tileMap, {
       onHazard: () => {
         this.player.takeDamage();
@@ -226,12 +248,30 @@ class Game {
         this.energyCollected++;
         this.player.obtainItem("core_blaster");
         this.updateHUD();
-      },
-      onGoal: () => {
-        this.onGoalReach();
       }
     });
 
+    // 5. ゴールゲート進入判定（中央下2マス領域 + 着地状態 + Wキー押下）
+    if (this.goalGate) {
+      const ent = this.goalGate.entranceRect;
+      const playerCenterX = this.player.x + this.player.width / 2;
+      const playerFeetY = this.player.y + this.player.height;
+
+      const isInEntrance = (
+        playerCenterX >= ent.x &&
+        playerCenterX <= ent.x + ent.width &&
+        playerFeetY >= ent.y + 4 &&
+        playerFeetY <= ent.y + ent.height + 4
+      );
+
+      // ジャンプ中は無視。地面に立っていて、かつWキーを押したときのみゴール
+      if (isInEntrance && this.player.isGrounded && this.keys["KeyW"]) {
+        this.onGoalReach();
+        return;
+      }
+    }
+
+    // 6. エネミー更新とプレイヤー衝突
     for (const enemy of this.enemies) {
       if (enemy.isDead) continue;
       enemy.update(this.tileMap);
@@ -256,6 +296,11 @@ class Game {
   onGoalReach() {
     this.isCleared = true;
     this.keys = {};
+    if (this.player) {
+      this.player.vx = 0;
+      this.player.vy = 0;
+      this.player.jumpInputConsumed = true;
+    }
     this.clearScoreText.innerText = `回収エネルギーコア: ${this.energyCollected} / ${this.totalEnergyCount}`;
     this.overlayClear.classList.add("active");
   }
@@ -275,9 +320,11 @@ class Game {
     const ctx = this.ctx;
     const camera = this.camera;
 
+    // 1. 背景描画
     ctx.fillStyle = this.tileMap.backgroundColor;
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // 2. タイル描画
     const startCol = Math.floor(camera.x / TILE_SIZE);
     const endCol = Math.ceil((camera.x + camera.width) / TILE_SIZE);
     const startRow = Math.floor(camera.y / TILE_SIZE);
@@ -294,14 +341,24 @@ class Game {
       }
     }
 
+    // 3. 3x3 ゴールゲート描画
+    if (this.goalGate) {
+      const gateDrawX = Math.round(this.goalGate.pixelX - camera.x);
+      const gateDrawY = Math.round(this.goalGate.pixelY - camera.y);
+      drawGoalGate3x3(ctx, gateDrawX, gateDrawY);
+    }
+
+    // 4. 弾描画
     for (const proj of this.projectiles) {
       proj.render(ctx, camera);
     }
 
+    // 5. エネミー描画
     for (const enemy of this.enemies) {
       enemy.render(ctx, camera);
     }
 
+    // 6. プレイヤー描画
     this.player.render(ctx, camera);
   }
 
