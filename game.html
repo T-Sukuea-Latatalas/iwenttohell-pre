@@ -9,7 +9,12 @@
 </head>
 <body>
   <div id="game-container">
-    <!-- ヘッドアップディスプレイ (HP制廃止、所持アイテム状態を表示) -->
+    <!-- エディタテストプレイ時のみ表示される戻るボタンバー -->
+    <div id="editor-return-bar" style="display: none;">
+      <button id="btn-return-to-editor" class="editor-return-btn">← エディタ画面に戻る</button>
+    </div>
+
+    <!-- ヘッドアップディスプレイ (HUD) -->
     <header id="hud">
       <div class="hud-group">
         <div class="hud-item">
@@ -32,7 +37,7 @@
     <!-- メインCanvas -->
     <canvas id="game-canvas" width="384" height="216"></canvas>
 
-    <!-- ゲームオーバー画面（クリックリスタート廃止・明示的なキー操作案内のみ） -->
+    <!-- ゲームオーバー画面 -->
     <div id="overlay-gameover" class="overlay-screen">
       <div class="overlay-title gameover">SYSTEM OFFLINE</div>
       <div class="overlay-subtitle">コアシステム停止</div>
@@ -47,7 +52,7 @@
     </div>
   </div>
 
-  <!-- スクリプト順次読み込み -->
+  <!-- スクリプト読み込み -->
   <script src="js/common/constants.js"></script>
   <script src="js/common/sprites.js"></script>
   <script src="js/common/tilemap.js"></script>

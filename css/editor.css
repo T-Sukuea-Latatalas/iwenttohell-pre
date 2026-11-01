@@ -3,154 +3,228 @@
   flex-direction: column;
   width: 100vw;
   height: 100vh;
+  background-color: #16181f;
+  overflow: hidden;
 }
 
-/* ツールバー */
-#toolbar {
+/* 最上部：グローバルヘッダーツールバー */
+#header-bar {
   height: 48px;
-  background-color: var(--bg-panel);
+  background-color: #1e212b;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
   gap: 16px;
-  z-index: 10;
+  z-index: 30;
 }
 
-.toolbar-group {
+.header-left, .header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.toolbar-title {
-  font-weight: bold;
-  font-size: 15px;
-  color: #fff;
-  margin-right: 8px;
+.app-title {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: #38bdf8;
+  font-family: var(--font-mono);
+  margin-right: 12px;
 }
 
-.dimension-input {
+.dimension-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-muted);
 }
 
-.dimension-input input {
-  width: 56px;
+.dimension-group input {
+  width: 52px;
+  padding: 4px 6px;
 }
 
-/* メインワークスペース */
-#workspace {
+/* 上部オブジェクトトレイ（横スクロールパレット） */
+#object-tray-bar {
+  height: 58px;
+  background-color: #242836;
+  border-bottom: 2px solid #2d3345;
   display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
-
-/* サイドバー（タイルパレット） */
-#palette-sidebar {
-  width: 240px;
-  background-color: var(--bg-panel);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
+  align-items: center;
+  padding: 0 16px;
   gap: 12px;
-  overflow-y: auto;
+  overflow-x: auto;
+  z-index: 20;
 }
 
-.sidebar-title {
-  font-size: 12px;
+#object-tray-bar::-webkit-scrollbar {
+  height: 4px;
+}
+#object-tray-bar::-webkit-scrollbar-thumb {
+  background: #3b4258;
+  border-radius: 2px;
+}
+
+.tray-title {
+  font-size: 11px;
   font-weight: bold;
+  color: #94a3b8;
   text-transform: uppercase;
-  color: var(--text-muted);
+  white-space: nowrap;
   letter-spacing: 0.5px;
 }
 
-#tile-palette-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+#object-palette-list {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.palette-btn {
+.tray-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px 4px;
-  background-color: var(--bg-input);
+  padding: 4px 10px;
+  height: 42px;
+  background-color: #1b1e28;
   border: 2px solid transparent;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.palette-btn:hover {
-  background-color: var(--border-color);
-}
-
-.palette-btn.active {
-  border-color: var(--accent);
-  background-color: rgba(59, 130, 246, 0.15);
-}
-
-.palette-preview {
-  width: 32px;
-  height: 32px;
-}
-
-.palette-name {
-  font-size: 11px;
-  color: var(--text-main);
-  text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 95px;
+  transition: all 0.15s ease;
 }
 
-/* キャンバスビューポート */
+.tray-btn:hover {
+  background-color: #2a2f3f;
+  border-color: #4b5563;
+}
+
+.tray-btn.active {
+  border-color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+}
+
+.tray-preview {
+  width: 28px;
+  height: 28px;
+}
+
+.tray-label {
+  font-size: 11px;
+  color: #e2e8f0;
+}
+
+/* メインワークスペース（左サイドツールバー + 中央広域キャンバス） */
+#workspace {
+  display: flex;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 左側アクションツールバー */
+#action-sidebar {
+  width: 54px;
+  background-color: #1e212b;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 12px;
+  z-index: 15;
+}
+
+.tool-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background-color: #282d3c;
+  border: 2px solid transparent;
+  cursor: pointer;
+  color: #cbd5e1;
+  font-size: 15px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.tool-btn:hover {
+  background-color: #33394c;
+  border-color: #64748b;
+}
+
+.tool-btn.active {
+  background-color: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.tool-key-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 3px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tool-divider {
+  width: 32px;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+/* キャンバスビューポート（広域作業エリア） */
 #canvas-viewport {
   flex: 1;
-  background-color: #0b0c10;
+  background: radial-gradient(circle at center, #171922 0%, #0d0e13 100%);
   overflow: auto;
   position: relative;
   display: flex;
-  padding: 32px;
+  padding: 40px;
 }
 
 #editor-canvas {
   background-color: #1a1c23;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
   margin: auto;
   cursor: crosshair;
 }
 
-/* ステータスバー（画面下部） */
+/* 下部ステータスバー */
 #statusbar {
   height: 28px;
-  background-color: var(--bg-panel);
+  background-color: #16181f;
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
+  font-family: var(--font-mono);
 }
 
-/* モーダルダイアログ */
+/* モーダル */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.65);
+  background-color: rgba(0, 0, 0, 0.7);
   display: none;
   align-items: center;
   justify-content: center;
@@ -167,10 +241,9 @@
   background-color: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .modal-header {

@@ -10,6 +10,32 @@
   overflow: hidden;
 }
 
+/* エディタテストプレイ時専用：エディタに戻るバー */
+#editor-return-bar {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  z-index: 60;
+}
+
+.editor-return-btn {
+  background-color: rgba(30, 41, 59, 0.9);
+  color: #38bdf8;
+  border: 1px solid #0284c7;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s ease;
+}
+
+.editor-return-btn:hover {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
 /* ゲーム描画Canvas */
 #game-canvas {
   background-color: #1a1c23;

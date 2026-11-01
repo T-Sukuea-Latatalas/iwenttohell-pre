@@ -9,48 +9,78 @@
 </head>
 <body>
   <div id="editor-app">
-    <!-- ツールバー -->
-    <header id="toolbar">
-      <div class="toolbar-group">
-        <span class="toolbar-title">2D STAGE EDITOR</span>
-        <div class="dimension-input">
-          <label for="input-width">幅(W):</label>
+    <!-- 最上部ヘッダー -->
+    <header id="header-bar">
+      <div class="header-left">
+        <span class="app-title">STAGE BUILDER</span>
+        <div class="dimension-group">
+          <label for="input-width">W:</label>
           <input type="number" id="input-width" min="10" max="250" value="60">
         </div>
-        <div class="dimension-input">
-          <label for="input-height">高(H):</label>
+        <div class="dimension-group">
+          <label for="input-height">H:</label>
           <input type="number" id="input-height" min="10" max="60" value="18">
         </div>
-        <button id="btn-resize">サイズ変更</button>
+        <button id="btn-resize">サイズ適用</button>
       </div>
 
-      <div class="toolbar-group">
-        <button id="btn-export-textures" title="assets/textures/ に配置する初期PNG画像をダウンロードします">テクスチャ画像DL</button>
-        <button id="btn-clear" class="danger">全消去</button>
-        <button id="btn-io">JSON 入出力</button>
+      <div class="header-right">
+        <button id="btn-clear" class="danger">クリア</button>
+        <button id="btn-io">JSON</button>
         <button id="btn-testplay" class="primary">▶ テストプレイ</button>
       </div>
     </header>
 
-    <!-- メイン領域 -->
+    <!-- 上部オブジェクトトレイ（配置オブジェクト一覧） -->
+    <section id="object-tray-bar">
+      <span class="tray-title">PARTS</span>
+      <div id="object-palette-list">
+        <!-- JSで空白以外の全オブジェクトを横並び生成 -->
+      </div>
+    </section>
+
+    <!-- メイン編集領域 -->
     <div id="workspace">
-      <!-- タイルパレット -->
-      <aside id="palette-sidebar">
-        <div class="sidebar-title">タイルパレット</div>
-        <div id="tile-palette-grid"></div>
+      <!-- 左サイド：編集モード切替ツールバー -->
+      <aside id="action-sidebar">
+        <!-- 鉛筆（配置）モード -->
+        <button id="tool-pen" class="tool-btn active" title="配置ツール (Q)">
+          <span>✏️</span>
+          <span class="tool-key-badge">Q</span>
+        </button>
+
+        <!-- 消しゴムモード -->
+        <button id="tool-eraser" class="tool-btn" title="消しゴム (E)">
+          <span>🧹</span>
+          <span class="tool-key-badge">E</span>
+        </button>
+
+        <div class="tool-divider"></div>
+
+        <!-- 範囲選択モード -->
+        <button id="tool-select" class="tool-btn" title="範囲選択 (S)">
+          <span>🔲</span>
+          <span class="tool-key-badge">S</span>
+        </button>
+
+        <!-- 複製ツール -->
+        <button id="tool-duplicate" class="tool-btn" title="選択範囲を複製 (D)">
+          <span>📋</span>
+          <span class="tool-key-badge">D</span>
+        </button>
       </aside>
 
-      <!-- キャンバス配置エリア -->
+      <!-- 広域キャンバス -->
       <main id="canvas-viewport">
         <canvas id="editor-canvas"></canvas>
       </main>
     </div>
 
-    <!-- ステータスバー -->
+    <!-- 下部ステータスバー -->
     <footer id="statusbar">
-      <div id="status-coords">座標: (X: 0, Y: 0)</div>
-      <div id="status-selection">選択タイル: [1] 地面ブロック</div>
-      <div id="status-grid-toggle">左クリック: 描画 / 右クリック: 消しゴム</div>
+      <div id="status-coords">COORD: (X: 0, Y: 0)</div>
+      <div id="status-mode">MODE: 配置 [地面ブロック]</div>
+      <div id="status-hint">ショートカット: [Q]鉛筆 | [E]消しゴム | [S]範囲選択 | [D]複製 | [Esc]選択解除</div>
     </footer>
   </div>
 
@@ -62,20 +92,17 @@
         <button id="btn-modal-close">×</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 12px; color: var(--text-muted);">
-          作成したデータをコピーして保存するか、既存のJSONを貼り付けてインポートしてください。
-        </p>
         <textarea id="io-textarea" spellcheck="false"></textarea>
       </div>
       <div class="modal-footer">
-        <button id="btn-copy-json">クリップボードにコピー</button>
-        <button id="btn-download-json">ファイル保存 (.json)</button>
-        <button id="btn-import-json" class="primary">ステージに反映</button>
+        <button id="btn-copy-json">コピー</button>
+        <button id="btn-download-json">ダウンロード</button>
+        <button id="btn-import-json" class="primary">反映</button>
       </div>
     </div>
   </div>
 
-  <!-- スクリプト順次読み込み -->
+  <!-- スクリプト読み込み -->
   <script src="js/common/constants.js"></script>
   <script src="js/common/sprites.js"></script>
   <script src="js/common/tilemap.js"></script>
